@@ -1,0 +1,48 @@
+---
+title: "test"
+format: html
+editor: visual
+---
+
+## Testing
+
+```{r}
+# libraries
+library(tidyverse)
+library(tidyquant)
+
+# things that make life easier
+strd <- "1992-01-01"
+codes <- c("1MO", "3MO", "6MO", "1", "2", "5", "7", "10", "20", "30") #these are time frames, fairly intuitive
+tickers <- c()
+for (i in 1:length(codes)) {
+  # DGS is Market Yield on US Treasury Securities with those specific time frames which I believe is what we're after
+  tickers <- c(tickers, paste0("DGS", codes[i]))
+}
+
+# initial data get
+FRED <- tidyquant::tq_get(c(tickers), get = "economic.data", from = strd)
+# all manipulation in a different data frame so the pull doesn't have to happen for every little change
+# simple computation of daily change in basis points
+FRED_data <- FRED %>% 
+  dplyr::group_by(symbol) %>% 
+  dplyr::mutate(BP_delta = price - dplyr::lag(price)) %>% 
+  tidyr::drop_na()
+  
+# graph of everyting
+FRED_graph <- plotly::plot_ly(FRED,
+                              x = ~date,
+                              y = ~price,
+                              color = ~symbol,
+                              type = "scatter",
+                              mode = "lines")
+# graph of change in basis points
+FRED_delta_graph <- plotly::plot_ly(FRED_data,
+                                    x = ~date,
+                                    y = ~BP_delta,
+                                    color = ~symbol,
+                                    type = "scatter",
+                                    mode = "lines")
+
+# annoyingly, plotly only goes to 8 colors and of course there's ten. that's all that warning you get when running it is
+```
