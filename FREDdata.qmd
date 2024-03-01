@@ -10,6 +10,7 @@ editor: visual
 # libraries
 library(tidyverse)
 library(tidyquant)
+library(plotly)
 
 # things that make life easier
 strd <- "1992-01-01"
@@ -26,8 +27,24 @@ FRED <- tidyquant::tq_get(c(tickers), get = "economic.data", from = strd)
 # simple computation of daily change in basis points
 FRED_data <- FRED %>% 
   dplyr::group_by(symbol) %>% 
-  dplyr::mutate(BP_delta = price - dplyr::lag(price)) %>% 
+  dplyr::mutate(BP_delta = price - dplyr::lag(price),
+                Bond_price = 100 - price,
+                Frac = stringr::str_sub(symbol, start = 4),
+                num = as.numeric(stringr::str_extract(symbol, "[0-9]+")),
+                test = dplyr::if_else(grepl("MO", symbol), num/12, num),
+                Adj_price = dplyr::if_else(test < 1, Bond_price, (100/((1+(price/100))^test))),
+                Yield = price) %>% 
   tidyr::drop_na()
+
+five_year <- FRED_data %>% 
+  plot_ly(x =~ Yield,
+          y =~ Adj_price,
+          color =~ symbol,
+          type = "scatter",
+          mode = "lines")
+
+
+
   
 # graph of everyting
 FRED_graph <- plotly::plot_ly(FRED,
