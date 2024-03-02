@@ -36,14 +36,15 @@ FRED_data <- FRED %>%
                 Yield = price) %>% 
   tidyr::drop_na()
 
-five_year <- FRED_data %>% 
-  plot_ly(x =~ Yield,
-          y =~ Adj_price,
-          color =~ symbol,
-          type = "scatter",
-          mode = "lines")
+full <- FRED_data %>% 
+  ggplot(aes(x = Yield, y = Adj_price, color = symbol)) +
+  geom_line()
+ggplotly(full)
+# this is plotting present values of pure discount securities using observed yields
 
 
+check <- FRED_data %>% 
+  dplyr::filter(Yield == 3)
 
   
 # graph of everyting
