@@ -1,4 +1,5 @@
 library(shiny)
+library(plotly)
    
 ui <- fluidPage(
   
@@ -9,6 +10,7 @@ ui <- fluidPage(
   sidebarLayout(
     
     sidebarPanel(
+      uiOutput("addBondButton"),
       sliderInput("ttm","Maturity in years",0,30,10),
       numericInput("coupon", "Coupon Rate:", value = 5),
       numericInput("ytm", "Yield:", value = 5),
@@ -20,7 +22,7 @@ ui <- fluidPage(
       h3("Price of the bond:"),
       textOutput("value"),
       h3("Sensibility of the price by yield:"),
-      plotlyOutput("main_plot"),
+      plotly::plotlyOutput("main_plot"),
       h6("Instruction:"),
       h6("You should insert the maturity, coupon, yield and redeption price"),
       h6("a) Select the maturity in years"),
