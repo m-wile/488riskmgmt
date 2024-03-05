@@ -1,4 +1,5 @@
 library(shiny)
+library(plotly)
    
 ui <- fluidPage(
   
@@ -9,6 +10,7 @@ ui <- fluidPage(
   sidebarLayout(
     
     sidebarPanel(
+      uiOutput("addBondButton"),
       sliderInput("ttm","Maturity in years",0,30,10),
       numericInput("coupon", "Coupon Rate:", value = 5, min = 0),
         # if this input is < 0, set it to be 0. the function 'numericInput' doesn't respect max and min parameters
@@ -22,8 +24,10 @@ ui <- fluidPage(
     mainPanel(
       h3("Price of the bond:"),
       textOutput("value"),
+
       h3("Sensitivity of the price by yield:"),
       plotlyOutput("main_plot"),
+
       h6("Instruction:"),
       h6("You should insert the maturity, coupon, yield and redeption price"),
       h6("a) Select the maturity in years"),
