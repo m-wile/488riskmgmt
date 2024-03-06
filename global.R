@@ -3,8 +3,8 @@ sourceCpp("bond.cpp")
 #######################################################
 # PRICE BOND FUNCTION
 #######################################################
-bond_cpp_call <- function(ytm = 0.05, C = 0.05, T2M = 1, m = 2, output = "price") {
-  result <- bond_cpp(ytm, C, T2M, m, output)
+bond_cpp_call <- function(ytm = 0.05, C = 0.05, T2M = 1, m = 2, face = 100) {
+  result <- bond_cpp(ytm, C, T2M, m, face)
   return(result)
 }
 

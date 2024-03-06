@@ -21,9 +21,8 @@ ui <- fluidPage(
       h6("of the sensibility of the price by yield")),
     
     mainPanel(
-      
+      textOutput("portfolio_value"),
+      plotlyOutput("ytm_price_plot")
+      )
     )
-    
-    
   )
-)

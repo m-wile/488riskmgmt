@@ -2,6 +2,7 @@ library(shiny)
 library(DT)
 library(tidyverse)
 library(RTL)
+library(plotly)
 
 server <- function(input, output, session) {
   
@@ -46,10 +47,12 @@ server <- function(input, output, session) {
       Par = as.numeric(input$par_value),
       TTM = as.numeric(input$ttm),
       "Bonds held" = as.numeric(input$principal),
-      Price = round(as.numeric(bond_cpp_call(ytm = as.numeric(input$ytm), 
-                                             C = as.numeric(input$coupon), 
+      Price = round(as.numeric(bond_cpp_call(ytm = as.numeric(input$ytm)/100, 
+                                             C = as.numeric(input$coupon)/100, 
                                              T2M = as.numeric(input$ttm), 
-                                             m = 2, output = "price")), 1)
+                                             m = 2, 
+                                             face = as.numeric(input$par_value)
+                                             )), 1)
     )
     removeModal()
     bonds_df$data <- rbind(bonds_df$data, new_bond)
@@ -101,4 +104,60 @@ server <- function(input, output, session) {
   output$deleteButton <- renderUI({
     actionButton("deleteButton", "Delete Selected Bonds")
   })
+  
+  #######################################################
+  # Calculate Total Portfolio Value
+  #######################################################
+  output$portfolio_value <- renderText({
+    total_value <- sum(bonds_df$data$Price * bonds_df$data$"Bonds held")
+    paste("Total Portfolio Value: $", total_value)
+  })
+  
+  #######################################################
+  # Plot Portfolio
+  #######################################################
+  output$ytm_price_plot <- renderPlotly({
+    # Create an empty plot
+    p <- plot_ly(type = 'scatter', mode = 'lines+markers')
+    
+    # Iterate through each bond in the portfolio
+    for (i in seq_len(nrow(bonds_df$data))) {
+      bond_data <- bonds_df$data[i, ]
+      
+      # Generate YTM values from 0% to 20% with a step of 1%
+      ytm_values <- seq(0, 0.20, 0.01)
+      price_values <- c()
+      
+      # Calculate bond prices for each YTM
+      for (j in 1:length(ytm_values)) {
+        price_value <- bond_cpp_call(ytm = ytm_values[j], 
+                                      C = bond_data$C/100, 
+                                      T2M = bond_data$TTM, 
+                                      m = 2, 
+                                      face = bond_data$Par)
+        price_values <- c(price_values, price_value)
+      }
+      
+      # Add a trace for each bond to the plot
+      p <- add_trace(p, x = ytm_values * 100, y = price_values, 
+                     type = 'scatter', mode = 'lines+markers', 
+                     name = paste('Bond ', i))
+      # Add current ytm
+      p <- add_trace(p, x = bond_data$YTM, y = bond_data$Price, 
+                     type = 'scatter', mode = 'markers', 
+                    
+                     showlegend = FALSE,
+                     marker = list(size = 8, color = 'black'))
+      
+    }
+    
+    # Customize plot layout
+    p1 <- layout(p, title = "Bond Prices Across Yields",
+                xaxis = list(title = "Yield to Maturity (%)"),
+                yaxis = list(title = "Bond Price"),
+                showlegend = TRUE)
+    
+    p1
+  })
+  
 }
