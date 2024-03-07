@@ -1,5 +1,7 @@
 #include <Rcpp.h>
 #include <cmath>
+#include <iostream>
+
 using namespace Rcpp;
 
 // Function to calculate Macaulay duration
@@ -25,7 +27,7 @@ double calculateConvexity(double ytm, double C, double T2M, int m, float face) {
   convexity += pow(m * T2M, 2) * face / pow(1 + ytm / m, m * T2M);
   return convexity / pow(1 + ytm / m, 2);}
 
-// Expose the functions to R using Rcpp
+// Expose the functions to ytm using Rcpp
 // [[Rcpp::export]]
 double calculateMacaulayDurationR(double ytm, double C, double T2M, int m, float face) {
   return calculateMacaulayDuration(ytm, C, T2M, m, face);
@@ -51,4 +53,50 @@ float bond_cpp(double ytm = 0.05, double C = 0.05, double T2M = 1, int m = 2, fl
   price += face / std::pow(1 + ytm / m, T2M * m);
   
   return price;
+}
+
+
+
+using namespace std;
+// [[Rcpp::export]]
+double PVBdur(float face,double C,double ytm, int m, double T2M)
+  
+{
+  
+  // store the value of the bond
+  
+  double BV1=0.;
+  
+  double BV2=0.;
+  
+  double Dur = 0.;
+  
+  double rr = ytm + 0.000001;
+  
+  // add in coupons
+  
+  int TNC=T2M*m;
+  
+  double cpn = (C/m)*face;
+  
+  for(int i=1;i<=TNC; i++)
+    
+  {
+    
+    BV1 = BV1 + cpn*pow((1+ytm/m),-i);
+    
+    BV2 = BV2 + cpn*pow((1+rr/m),-i);
+    
+  }
+  
+  // finally add principle
+  
+  BV1 = BV1 + face*pow((1+ytm/m),-T2M*m);
+  
+  BV2 = BV2 + face*pow((1+rr/m),-T2M*m);
+  
+  Dur = (((BV2 - BV1)/BV1)*(1+ytm/m)/(ytm-rr))/(1+ytm/m);
+  
+  return Dur;
+  
 }
