@@ -10,10 +10,14 @@ ui <- fluidPage(
   sidebarLayout(
     
     sidebarPanel(
+      #buttons
       uiOutput("addBondButton"),
-      DTOutput("bond_table"),
       uiOutput("deleteButton"),
       actionButton("loadRandomPortfolio", "Load Random Portfolio"),
+      # output
+      DTOutput("bond_table", width = 300, fill = TRUE),
+      
+      #text
       h6("Instruction:"),
       h6("You should insert the maturity, coupon, yield and redeption price"),
       h6("a) Select the maturity in years"),
@@ -24,10 +28,11 @@ ui <- fluidPage(
     
     
     mainPanel(
-      textOutput("portfolio_value"),
+      
       plotlyOutput("ytm_price_plot"), 
       plotlyOutput("yield_curve_plot"),
-      plotlyOutput("duration_convexity_plot")
+      plotlyOutput("duration_convexity_plot"),
+      plotlyOutput("fred_plot")
       
       )
     )
