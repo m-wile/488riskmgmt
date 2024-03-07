@@ -28,17 +28,18 @@ FRED <- tidyquant::tq_get(c(tickers), get = "economic.data", from = strd)
 # simple computation of daily change in basis points
 FRED_data <- FRED %>% 
   dplyr::group_by(symbol) %>% 
-  dplyr::mutate(symbol = case_when(symbol == 'DGS1MO' ~ '1/12',
-                                   symbol == 'DGS3MO' ~ '3/12',
-                                   symbol == 'DGS6MO' ~ '6/12',
-                                   symbol == 'DGS1' ~'1',
-                                   symbol == 'DGS2' ~ '2',
-                                   symbol == 'DGS5' ~ '5',
-                                   symbol == 'DGS7' ~ '7',
-                                   symbol == 'DGS10' ~ '10',
-                                   symbol == 'DGS20' ~ '20',
-                                   symbol == 'DGS30' ~ '30'),
+  dplyr::mutate(symbol = case_when(symbol == 'DGS1MO' ~ 1/12,
+                                   symbol == 'DGS3MO' ~ 3/12,
+                                   symbol == 'DGS6MO' ~ 6/12,
+                                   symbol == 'DGS1' ~1,
+                                   symbol == 'DGS2' ~ 2,
+                                   symbol == 'DGS5' ~ 5,
+                                   symbol == 'DGS7' ~ 7,
+                                   symbol == 'DGS10' ~ 10,
+                                   symbol == 'DGS20' ~ 20,
+                                   symbol == 'DGS30' ~ 30),
                 rate = price / 100,
+                cf = 100,
                 basischange = (rate - dplyr::lag(rate)) * 10000,
                 Bond_price = 100 - price,
                 Frac = stringr::str_sub(symbol, start = 4),
@@ -48,6 +49,18 @@ FRED_data <- FRED %>%
                 Yield = price) %>% 
   tidyr::drop_na() %>% 
   mutate(sd = round(runSD(basischange, n = 5, sample = F), 2))
+
+taylorseries <- FRED_data %>% mutate(ytm = 0.05,
+                                     fv = 100,
+                                     coupon = 0,
+                                     m = 2,
+                                     price = bond_cpp_call(ytm = ytm, c = 0, t2m = symbol, m = m, face = fv),
+                                     duration = durtion_cpp_call(ytm = ytm, c = 0, t2m = symbol, m = m, face = fv),
+                                     convexity = convexity_cpp_call(ytm = ytm, c = 0, t2m = symbol, m = m, face = fv),
+                                     shock = 1,
+                                     term1 = duration*shock_up*price,
+                                     term2 = 0.5*convexity*shock^2*price,
+                                     risk = term1 + term2)
 
 full <- FRED_data %>% 
   ggplot(aes(x = Yield, y = Adj_price, color = symbol)) +
@@ -78,8 +91,6 @@ FRED_delta_graph <- plotly::plot_ly(FRED_data,
 # annoyingly, plotly only goes to 8 colors and of course there's ten. that's all that warning you get when running it is
 ```
 
-
 ```{r}
 FRED_data %>% filter(symbol == '2') #go to page 11 to match phils example
 ```
-
