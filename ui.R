@@ -51,7 +51,7 @@ ui <- shiny::fluidPage(
                         shiny::br(),
                         shiny::splitLayout(cellWidths = c("50%", "50%"), 
                                            plotly::plotlyOutput("ytm_price_plot"), 
-                                           plotly::plotlyOutput("duration_convexity_plot")), 
+                                           plotly::plotlyOutput("duration_convexity_plot"))
                         # shiny::br(),
                         # shiny::br(),
                         # plotly::plotlyOutput("yield_curve_plot")
