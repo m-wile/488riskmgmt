@@ -98,7 +98,7 @@ server <- function(input, output, session) {
   # Save Bond when Save Bond Button is clicked
   shiny::observeEvent(input$saveBond, {
     StepSize <- 0.0001
-    
+    browser()
     bond_price <- as.numeric(bond_cpp_call(ytm = as.numeric(input$ytm)/100, 
                                            C = as.numeric(input$coupon)/100, 
                                            T2M = as.numeric(input$ttm), 
@@ -106,14 +106,14 @@ server <- function(input, output, session) {
                                            face = as.numeric(input$par_value)
     ))
     
-    bond_price_minus <- as.numeric(bond_cpp_call(ytm = as.numeric(input$ytm)/100- StepSize, 
+    bond_price_minus <- as.numeric(bond_cpp_call(ytm = (as.numeric(input$ytm)/100 - StepSize), 
                                                  C = as.numeric(input$coupon)/100, 
                                                  T2M = as.numeric(input$ttm), 
                                                  m = 2, 
                                                  face = as.numeric(input$par_value)
     ))
     
-    bond_price_plus <- as.numeric(bond_cpp_call(ytm = as.numeric(input$ytm)/100+ StepSize, 
+    bond_price_plus <- as.numeric(bond_cpp_call(ytm = (as.numeric(input$ytm)/100 + StepSize), 
                                                 C = as.numeric(input$coupon)/100, 
                                                 T2M = as.numeric(input$ttm), 
                                                 m = 2, 
@@ -185,7 +185,7 @@ server <- function(input, output, session) {
                                                               face = random_portfolio$Par[i]
       )), 1)
       random_portfolio$Total[i] <- round(as.numeric(random_portfolio$bonds_held[i]) * bond_price, 1)
-      random_portfolio$Delta[i] <- as.numeric((bond_price_plus - bond_price - bond_price_minus) / 
+      random_portfolio$Delta[i] <- as.numeric((bond_price_plus  - bond_price_minus) / 
                                                 (2 * StepSize) / 10000)
       random_portfolio$Gamma[i] <- as.numeric(0.5 * ((bond_price_plus - 2 * bond_price + bond_price_minus) / 
                                                        StepSize^2) / 10000^2)
@@ -366,7 +366,7 @@ server <- function(input, output, session) {
                              name = 'Total Portfolio',
                              line = list(color = 'red', width = 2))
     }
-    p_port <- plotly::layout(p_port, title = "Portfolio Across Yields",
+    p_port <- plotly::layout(p_port, title = "Bond Prices Across Yields",
                              xaxis = list(title = "Yield to Maturity", 
                                           ticksuffix = "%"),
                              yaxis = list(title = "Bond Price"),
