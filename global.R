@@ -44,6 +44,7 @@ bond_df_org <- data.frame(data.frame(
 # LOAD HISTORICAL DATA
 strd <- "1992-01-01"
 codes <- c("1MO", "3MO", "6MO", "1", "2", "5", "7", "10", "20", "30") 
+
 tickers <- c()
 for (i in 1:length(codes)) {
   # DGS is Market Yield on US Treasury Securities with those specific time frames
@@ -52,6 +53,7 @@ for (i in 1:length(codes)) {
 
 # FRED DATA PULL
 FRED <- tidyquant::tq_get(c(tickers), get = "economic.data", from = strd)
+
 FRED_data <- FRED %>% 
   dplyr::group_by(symbol) %>% 
   dplyr::mutate(symbol = dplyr::case_when(symbol == 'DGS1MO' ~ 1/12,
