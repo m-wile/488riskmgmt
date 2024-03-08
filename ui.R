@@ -28,7 +28,7 @@ ui <- fluidPage(
     
     
     mainPanel(
-      
+    
       plotlyOutput("ytm_price_plot"), 
       plotlyOutput("yield_curve_plot"),
       plotlyOutput("duration_convexity_plot"),
