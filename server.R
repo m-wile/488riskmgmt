@@ -56,13 +56,13 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$addBond, {
     shiny::showModal(shiny::modalDialog(
       shinyWidgets::numericInputIcon(inputId = "coupon", label = "Annual Coupon Rate (%):",
-                                     value = 4, icon = shiny::icon("percent")),
+                                     value = 4, min = 0, icon = shiny::icon("percent")),
       shinyWidgets::numericInputIcon(inputId = "ytm", label = "Yield to Maturity (%):",
-                                     value = 5, icon = shiny::icon("percent")),
+                                     value = 5, min = 0, icon = shiny::icon("percent")),
       # textInput("coupon", "Annual Coupon Rate (%):", "4"),
       # textInput("ytm", "Yield to Maturity (%):", "5"),
-      shiny::numericInput(inputId = "par_value", label = "Par Value:", value = 100),
-      shiny::numericInput(inputId = "ttm", label = "Years to Maturity:", value = 10),
+      shinyWidgets::numericInputIcon(inputId = "par_value", label = "Par Value:", value = 100, min = 0),
+      shinyWidgets::numericInputIcon(inputId = "ttm", label = "Years to Maturity:", value = 10, min = 0),
       shiny::numericInput(inputId = "num_bonds", label = "Number of Bonds:", value = 1000),
       shiny::actionButton("saveBond", "Save Bond"),
       # textInput("coupon", "Annual Coupon Rate (%):", "4"),
