@@ -78,8 +78,6 @@ FRED_delta_graph <- plotly::plot_ly(FRED_data,
 # annoyingly, plotly only goes to 8 colors and of course there's ten. that's all that warning you get when running it is
 ```
 
-
 ```{r}
 FRED_data %>% filter(symbol == '2') #go to page 11 to match phils example
 ```
-
