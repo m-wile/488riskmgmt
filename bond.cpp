@@ -55,7 +55,28 @@ float bond_cpp(double ytm = 0.05, double C = 0.05, double T2M = 1, int m = 2, fl
   return price;
 }
 
-
+// [[Rcpp::export]]
+NumericVector bond_cpp2(NumericVector ytm, NumericVector C, NumericVector T2M, int m = 2, float face = 100) {
+  
+  // calculate the number of elements in the vectors
+  int n = ytm.size();
+  
+  // create a vector to store the results
+  NumericVector price(n);
+  
+  // loop over the vectors and calculate the price for each set of parameters
+  for (int k = 0; k < n; ++k) {
+    // discounting all the coupons
+    for (int i = 1; i <= (T2M[k] * m); ++i) {
+      price[k] += (C[k] * face / m) / std::pow((1 + ytm[k] / m), i);
+    }
+    
+    // discounting the face value
+    price[k] += face / std::pow(1 + ytm[k] / m, T2M[k] * m);
+  }
+  
+  return price;
+}
 
 using namespace std;
 // [[Rcpp::export]]

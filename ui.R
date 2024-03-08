@@ -20,6 +20,7 @@ ui <- shiny::fluidPage(
       shiny::uiOutput("addBondButton"),
       shiny::br(), 
       shiny::uiOutput("deleteButton"),
+
       shiny::br(),
       shiny::actionButton("loadRandomPortfolio", "Load Random Portfolio")),
       # shiny::uiOutput("addBondButton"),
@@ -57,7 +58,11 @@ ui <- shiny::fluidPage(
                         ),
         shiny::tabPanel("Historical Charts", 
                         shiny::br(),
-                        plotly::plotlyOutput("fred_plot")), 
+                        plotly::plotlyOutput("fred_plot"), 
+                        plotly::plotlyOutput("fred_plot_delta"), 
+                        plotly::plotlyOutput("fred_plot_gamma")
+                        ), 
+          
         # shiny::tabPanel("Price Across Yield", 
         #                 plotly::plotlyOutput("ytm_price_plot")),
         # shiny::tabPanel("Yield Curve", 

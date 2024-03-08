@@ -29,6 +29,13 @@ server <- function(input, output, session) {
     shiny::actionButton("addBond", "Add Bond")
   })
   
+  
+  total_value <- shiny::reactive({
+    sum(bonds_df$data$Total)
+  })
+  output$total_value_output <- renderText({
+    paste("Total Portfolio Value: $", format(total_value(), big.mark = ",", scientific = FALSE))
+  })
   # Add Delete Button
   output$deleteButton <- shiny::renderUI({
     shiny::actionButton("deleteButton", "Delete Selected Bonds")
@@ -192,11 +199,43 @@ server <- function(input, output, session) {
     FRED %>% 
       # plot by symbol
       plot_ly(x = ~date, y = ~price, type = 'scatter', mode = 'lines', color = ~symbol) %>%
-      plotly::layout(title = 'FRED Data',
-                     xaxis = list(title = 'Date'),
-                     yaxis = list(title = 'Rate'),
+      plotly::layout(title = 'Historical US Treasury Bond Yields',
+                     xaxis = list(title = ''),
+                     yaxis = list(title = 'Rate (%)'),
                      showlegend = TRUE)
   })
+  
+  # Output and plot FRED data
+  output$fred_plot_delta <- renderPlotly({
+    FRED_data %>% 
+      group_by(symbol) %>%
+      # plot by symbol
+      plot_ly(x = ~date, y = ~Delta, type = 'scatter', mode = 'lines', color = ~as.character(symbol), name = ~paste0(as.character(round(symbol, 1)), " Years")) %>%
+      plotly::layout(title = 'Historical US Treasury Bond Deltas',
+                     xaxis = list(title = ''),
+                     yaxis = list(title = 'Delta'), 
+                     legend = list(title = "Years to Maturity"),
+                     showlegend = T) %>% 
+      # adjust date limit
+      layout(xaxis = list(range = range(FRED_data$date)))
+      
+  })
+  
+  # Output and plot FRED data
+  output$fred_plot_gamma <- renderPlotly({
+    FRED_data %>% 
+      group_by(symbol) %>%
+      # plot by symbol
+      plot_ly(x = ~date, y = ~Gamma, type = 'scatter', mode = 'lines', color = ~as.character(symbol), name = ~paste0(as.character(round(symbol, 1)), " Years")) %>%
+      plotly::layout(title = 'Historical US Treasury Bond Gammas',
+                     xaxis = list(title = ''),
+                     yaxis = list(title = 'Gamma'),
+                     legend = list(title = "Years to Maturity"),
+                     showlegend = TRUE) %>% 
+      # adjust date limit
+      layout(xaxis = list(range = range(FRED_data$date)))
+  })
+  
   
   # Output df with selection
   output$bond_table <- DT::renderDT({
@@ -259,10 +298,11 @@ server <- function(input, output, session) {
     p_curve
   })
   
-  # Plot Portfolio
+# Plot Portfolio
   output$ytm_price_plot <- plotly::renderPlotly({
     # Create an empty plot
     p <- plotly::plot_ly(type = 'scatter', mode = 'lines+markers')
+    p_port <- plotly::plot_ly(type = 'scatter', mode = 'lines+markers')
     
     # Iterate through each bond in the portfolio
     for (i in seq_len(nrow(bonds_df$data))) {
@@ -270,7 +310,9 @@ server <- function(input, output, session) {
       
       # Generate YTM values from 0% to 20% with a step of 1%
       ytm_values <- seq(0, 0.20, 0.01)
+      
       price_values <- c()
+      price_values2 <- c()
       
       # Calculate bond prices for each YTM
       for (j in 1:length(ytm_values)) {
@@ -279,13 +321,16 @@ server <- function(input, output, session) {
                                      T2M = bond_data$TTM, 
                                      m = 2, 
                                      face = bond_data$Par)
-        price_values <- c(price_values, price_value)
+        price_values <- c(price_values, bond_data$bonds_held * price_value)
+        price_values2 <- c(price_values2, price_value)
+        
       }
       
       # Add a trace for each bond to the plot
-      p <- plotly::add_trace(p, x = ytm_values * 100, y = price_values, 
+      p <- plotly::add_trace(p, x = ytm_values * 100, y = price_values2, 
                              type = 'scatter', mode = 'lines+markers',
                              name = paste('Bond ', i))
+      
       # Add current ytm
       p <- plotly::add_trace(p, x = bond_data$YTM, y = bond_data$Price, 
                              type = 'scatter', mode = 'markers',
@@ -294,11 +339,38 @@ server <- function(input, output, session) {
     }
     
     # Plot combined holdings
-    if (nrow(bonds_df$data) > 0){
+    if (nrow(bonds_df$data) > 0) {
       ytm_values <- seq(0, 0.20, 0.01)
-      price_values <- c()
+      price_values <- matrix(0, nrow = length(ytm_values), ncol = nrow(bonds_df$data))
+      
+      # Calculate total portfolio price for each YTM
+      for (i in 1:nrow(bonds_df$data)) {
+        bond_data <- bonds_df$data[i, ]
+        
+        for (j in 1:length(ytm_values)) {
+          price_value <- bond_cpp_call(ytm = ytm_values[j], 
+                                       C = bond_data$C/100, 
+                                       T2M = bond_data$TTM, 
+                                       m = 2, 
+                                       face = bond_data$Par)
+          price_values[j, i] <- bond_data$bonds_held * price_value
+        }
+      }
+      
+      # Sum the total portfolio price for each YTM
+      total_portfolio_price <- rowSums(price_values)
+      
+      # Add a trace for the total portfolio to the plot
+      p_port <- plotly::add_trace(p_port, x = ytm_values * 100, y = total_portfolio_price, 
+                             type = 'scatter', mode = 'lines+markers',
+                             name = 'Total Portfolio',
+                             line = list(color = 'red', width = 2))
     }
-    
+    p_port <- plotly::layout(p_port, title = "Portfolio Across Yields",
+                             xaxis = list(title = "Yield to Maturity", 
+                                          ticksuffix = "%"),
+                             yaxis = list(title = "Bond Price"),
+                             showlegend = TRUE)
     # Customize plot layout
     p1 <- plotly::layout(p, title = "Bond Prices Across Yields",
                          xaxis = list(title = "Yield to Maturity", 
@@ -306,7 +378,8 @@ server <- function(input, output, session) {
                          yaxis = list(title = "Bond Price"),
                          showlegend = TRUE)
     
-    p1
+    plotly::subplot(p1, p_port, nrows = 2)
+    
   })
   
   # Plot Duration and Convexity
@@ -344,10 +417,30 @@ server <- function(input, output, session) {
       
     }
     
-    # Plot combined holdings
-    if (nrow(bonds_df$data) > 0){
+    # Plot combined holdings for total portfolio duration
+    if (nrow(bonds_df$data) > 0) {
       ytm_values <- seq(0, 0.20, 0.01)
-      dur_values <- c()
+      total_portfolio_dur_values <- rep(0, length(ytm_values))
+      
+      # Calculate total portfolio duration for each YTM
+      for (i in 1:nrow(bonds_df$data)) {
+        bond_data <- bonds_df$data[i, ]
+        
+        for (j in 1:length(ytm_values)) {
+          dur_value <- PVBdur(ytm = ytm_values[j], 
+                              C = bond_data$C/100, 
+                              T2M = bond_data$TTM, 
+                              m = 2, 
+                              face = bond_data$Par)
+          total_portfolio_dur_values[j] <- total_portfolio_dur_values[j] + (bond_data$Total/total_value()) * dur_value
+        }
+      }
+      
+      # Add a trace for the total portfolio to the plot
+      p2 <- plotly::add_trace(p2, x = ytm_values * 100, y = total_portfolio_dur_values, 
+                              type = 'scatter', mode = 'lines+markers',
+                              name = 'Total Portfolio',
+                              line = list(color = 'red', width = 2))
     }
     
     # Customize plot layout
