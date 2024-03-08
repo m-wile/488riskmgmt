@@ -98,7 +98,6 @@ server <- function(input, output, session) {
   # Save Bond when Save Bond Button is clicked
   shiny::observeEvent(input$saveBond, {
     StepSize <- 0.0001
-    browser()
     bond_price <- as.numeric(bond_cpp_call(ytm = as.numeric(input$ytm)/100, 
                                            C = as.numeric(input$coupon)/100, 
                                            T2M = as.numeric(input$ttm), 
