@@ -10,6 +10,8 @@ ui <- shiny::fluidPage(
       shiny::uiOutput("addBondButton"),
       shiny::uiOutput("deleteButton"),
       shiny::actionButton("loadRandomPortfolio", "Load Random Portfolio"),
+      # Display the total value
+      textOutput("total_value_output"),
       shiny::h6("Instruction:"),
       shiny::h6("You should insert the maturity, coupon, yield and redeption price"),
       shiny::h6("a) Select the maturity in years"),
@@ -42,7 +44,11 @@ ui <- shiny::fluidPage(
                         ),
         shiny::tabPanel("Historical Charts", 
                         shiny::br(),
-                        plotly::plotlyOutput("fred_plot")), 
+                        plotly::plotlyOutput("fred_plot"), 
+                        plotly::plotlyOutput("fred_plot_delta"), 
+                        plotly::plotlyOutput("fred_plot_gamma")
+                        ), 
+          
         # shiny::tabPanel("Price Across Yield", 
         #                 plotly::plotlyOutput("ytm_price_plot")),
         # shiny::tabPanel("Yield Curve", 
