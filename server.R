@@ -75,6 +75,26 @@ server <- function(input, output, session) {
     )
   })
   
+  shiny::observeEvent(input$help, {
+    shiny::showModal(
+      shiny::modalDialog(
+        shiny::h5("Instructions:"),
+        shiny::HTML("<h6> Click <em> Load Random Portfolio </em> to generate a random
+                    portfolio."),
+        shiny::br(), 
+        shiny::h6("Otherwise, you should insert the maturity, coupon, yield and redeption price"),
+        shiny::h6("a) Insert coupon as a percentage"), 
+        shiny::h6("b) Input the Yield to Maturity in percentage"), 
+        shiny::h6("c) Enter Par Value in Dollars"),
+        shiny::h6("d) Select the maturity in years"),
+        shiny::h6("e) Insert number of bonds held"),
+        shiny::h6("You will get the quotation of the bond as percentage and a graphic
+                  of the sensibility of the price by yield."), 
+        easyClose = TRUE
+      )
+    )
+  })
+  
   # Save Bond when Save Bond Button is clicked
   shiny::observeEvent(input$saveBond, {
     StepSize <- 0.0001

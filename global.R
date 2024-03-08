@@ -3,7 +3,7 @@ library(tidyverse)
 library(tidyquant)
 library(TTR)
 
-sourceCpp("bond.cpp")
+Rcpp::sourceCpp("bond.cpp")
 
 bond_cpp_call2 <- function(ytm = 0.05, C = 0.05, T2M = 1, m = 2, face = 100) {
   result <- bond_cpp2(ytm, C, T2M, m, face)
@@ -96,11 +96,12 @@ taylorseries <- function(basis_shock = 1, ytm = 0.05) {
                   fv = 100,
                   coupon = 0,
                   m = 2,
-                  price = bond_cpp_call(ytm = ytm, c = 0, t2m = symbol, m = m, face = fv),
-                  duration = durtion_cpp_call(ytm = ytm, c = 0, t2m = symbol, m = m, face = fv),
-                  convexity = convexity_cpp_call(ytm = ytm, c = 0, t2m = symbol, m = m, face = fv),
+                  # Change YTM intake to vector - will be taking the portfolio 
+                  price = bond_cpp_call(ytm = ytm, C = 0, T2M = symbol, m = m, face = fv),
+                  duration = duration_cpp_call(ytm = ytm, C = 0, T2M = symbol, m = m, face = fv),
+                  convexity = convexity_cpp_call(ytm = ytm, C = 0, T2M = symbol, m = m, face = fv),
                   shock = 1,
-                  term1 = durationshock_upprice,
-                  term2 = 0.5*convexityshock^2*price,
+                  term1 = duration*shock*price,
+                  term2 = 0.5*convexity*shock^2*price,
                   risk = term1 + term2)
 }
