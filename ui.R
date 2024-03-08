@@ -28,12 +28,21 @@ ui <- fluidPage(
     
     
     mainPanel(
+<<<<<<< HEAD
+    
+      plotlyOutput("ytm_price_plot"), 
+      plotlyOutput("yield_curve_plot"),
+      plotlyOutput("duration_convexity_plot"),
+      plotlyOutput("fred_plot")
+      
+=======
       tabsetPanel(
         type = "tabs",
         tabPanel("Price Across Yield", plotlyOutput("ytm_price_plot")),
         tabPanel("Yield Curve", plotlyOutput("yield_curve_plot")),
         tabPanel("Delta & Gamma", plotlyOutput("duration_convexity_plot")),
         tabPanel("Federal Reserve Data", plotlyOutput("fred_plot")),
+>>>>>>> c0f1640a5fd702704b99d714f8cc0d20894910ca
       )
     )
   )
