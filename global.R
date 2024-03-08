@@ -49,7 +49,7 @@ bond_df_org <- data.frame(data.frame(
 # Load HISTORICAL DATA
 ####################################################
 # things that make life easier
-strd <- "1992-01-01"
+strd <- "2023-01-01"
 codes <- c("1MO", "3MO", "6MO", "1", "2", "5", "7", "10", "20", "30") #these are time frames, fairly intuitive
 tickers <- c()
 for (i in 1:length(codes)) {
@@ -58,7 +58,8 @@ for (i in 1:length(codes)) {
 }
 
 # initial data get
-FRED <- tidyquant::tq_get(c(tickers), get = "economic.data", from = strd)
+FRED <- tidyquant::tq_get(c(tickers), get = "economic.data", from = strd) %>% 
+  na.omit()
 FRED_data <- FRED %>% 
   dplyr::group_by(symbol) %>% 
   dplyr::mutate(symbol = case_when(symbol == 'DGS1MO' ~ 1/12,

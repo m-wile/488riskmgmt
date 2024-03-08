@@ -1,14 +1,14 @@
 library(shiny)
 library(plotly)
 library(DT)
-   
+
 ui <- fluidPage(
-  
+  theme = shinythemes::shinytheme("flatly"),
   # Application title
-  titlePanel("Bond Price"),
+  titlePanel("Bond Trading Toolbox"),
+  
   # Sidebar with a slider input 
   sidebarLayout(
-    
     sidebarPanel(
       #buttons
       uiOutput("addBondButton"),
@@ -16,7 +16,6 @@ ui <- fluidPage(
       actionButton("loadRandomPortfolio", "Load Random Portfolio"),
       # output
       DTOutput("bond_table", width = 300, fill = TRUE),
-      
       #text
       h6("Instruction:"),
       h6("You should insert the maturity, coupon, yield and redeption price"),
@@ -28,21 +27,12 @@ ui <- fluidPage(
     
     
     mainPanel(
-<<<<<<< HEAD
-    
-      plotlyOutput("ytm_price_plot"), 
-      plotlyOutput("yield_curve_plot"),
-      plotlyOutput("duration_convexity_plot"),
-      plotlyOutput("fred_plot")
-      
-=======
       tabsetPanel(
         type = "tabs",
         tabPanel("Price Across Yield", plotlyOutput("ytm_price_plot")),
         tabPanel("Yield Curve", plotlyOutput("yield_curve_plot")),
         tabPanel("Delta & Gamma", plotlyOutput("duration_convexity_plot")),
         tabPanel("Federal Reserve Data", plotlyOutput("fred_plot")),
->>>>>>> c0f1640a5fd702704b99d714f8cc0d20894910ca
       )
     )
   )
