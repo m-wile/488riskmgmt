@@ -47,7 +47,7 @@ bond_df_org <- data.frame(data.frame(
 ))
 
 # LOAD HISTORICAL DATA
-strd <- "2023-01-01"
+strd <- "1992-01-01"
 codes <- c("1MO", "3MO", "6MO", "1", "2", "5", "7", "10", "20", "30") 
 
 tickers <- c()
