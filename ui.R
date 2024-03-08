@@ -1,38 +1,56 @@
-library(shiny)
-library(plotly)
 library(DT)
+library(plotly)
+library(shiny)
 
-ui <- fluidPage(
-  theme = shinythemes::shinytheme("flatly"),
-  # Application title
-  titlePanel("Bond Trading Toolbox"),
-  
-  # Sidebar with a slider input 
-  sidebarLayout(
-    sidebarPanel(
-      #buttons
-      uiOutput("addBondButton"),
-      uiOutput("deleteButton"),
-      actionButton("loadRandomPortfolio", "Load Random Portfolio"),
-      # output
-      DTOutput("bond_table", width = 300, fill = TRUE),
-      #text
-      h6("Instruction:"),
-      h6("You should insert the maturity, coupon, yield and redeption price"),
-      h6("a) Select the maturity in years"),
-      h6("b) Insert coupon and yield as percentage"),
-      h6("c) Insert redemption price as percentage "),
-      h6("You will get the quotation of the bond as percentage and a graphic"),
-      h6("of the sensibility of the price by yield")),
-    
-    
-    mainPanel(
-      tabsetPanel(
+ui <- shiny::fluidPage(
+  shiny::titlePanel("Bond Price"),
+  shiny::sidebarLayout(
+    shiny::sidebarPanel(
+      width = 2,
+      shiny::uiOutput("addBondButton"),
+      shiny::uiOutput("deleteButton"),
+      shiny::actionButton("loadRandomPortfolio", "Load Random Portfolio"),
+      shiny::h6("Instruction:"),
+      shiny::h6("You should insert the maturity, coupon, yield and redeption price"),
+      shiny::h6("a) Select the maturity in years"),
+      shiny::h6("b) Insert coupon and yield as percentage"),
+      shiny::h6("c) Insert redemption price as percentage "),
+      shiny::h6("You will get the quotation of the bond as percentage and a graphic"),
+      shiny::h6("of the sensibility of the price by yield")),
+    shiny::mainPanel(
+      width = 10, 
+      # plotly::plotlyOutput("ytm_price_plot"), 
+      # plotly::plotlyOutput("yield_curve_plot"),
+      # plotly::plotlyOutput("duration_convexity_plot"),
+      # plotly::plotlyOutput("fred_plot"),
+      shiny::tabsetPanel(
         type = "tabs",
-        tabPanel("Price Across Yield", plotlyOutput("ytm_price_plot")),
-        tabPanel("Yield Curve", plotlyOutput("yield_curve_plot")),
-        tabPanel("Delta & Gamma", plotlyOutput("duration_convexity_plot")),
-        tabPanel("Federal Reserve Data", plotlyOutput("fred_plot")),
+        shiny::tabPanel("Portfolio Summary", 
+                        shiny::br(),
+                        DT::DTOutput("bond_table", width = 300, fill = TRUE), 
+                        shiny::br(), 
+                        shiny::br(), 
+                        plotly::plotlyOutput("yield_curve_plot")),
+        shiny::tabPanel("Portfolio Charts", 
+                        shiny::br(),
+                        shiny::splitLayout(cellWidths = c("50%", "50%"), 
+                                           plotly::plotlyOutput("ytm_price_plot"), 
+                                           plotly::plotlyOutput("duration_convexity_plot")), 
+                        # shiny::br(),
+                        # shiny::br(),
+                        # plotly::plotlyOutput("yield_curve_plot")
+                        ),
+        shiny::tabPanel("Historical Charts", 
+                        shiny::br(),
+                        plotly::plotlyOutput("fred_plot")), 
+        # shiny::tabPanel("Price Across Yield", 
+        #                 plotly::plotlyOutput("ytm_price_plot")),
+        # shiny::tabPanel("Yield Curve", 
+        #                 plotly::plotlyOutput("yield_curve_plot")),
+        # shiny::tabPanel("Delta & Gamma", 
+        #                 plotly::plotlyOutput("duration_convexity_plot")),
+        # shiny::tabPanel("Federal Reserve Data", 
+        #                 plotly::plotlyOutput("fred_plot")),
       )
     )
   )
